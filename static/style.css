@@ -939,17 +939,8 @@ body.resizing * { user-select: none !important; -webkit-user-select: none !impor
 .mobile-only { display: none; }
 
 /* ══════════════════════════════════════
-   Responsive: tablets and smaller
+   Responsive: phones only (desktop + tablet share dense styles)
    ══════════════════════════════════════ */
-
-@media (max-width: 1024px) {
-    #sidebar { width: 280px; }
-
-    .tree-item { padding: 10px 12px; min-height: 44px; font-size: 14px; }
-    .search-item { padding: 12px 16px; min-height: 48px; font-size: 14px; }
-    .scope-item { padding: 8px 0; font-size: 14px; }
-    .quick-filter { padding: 8px 16px; font-size: 13px; }
-}
 
 @media (max-width: 768px) {
     #sidebar {
