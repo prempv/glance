@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forge</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <div id="sidebar">
+            <div id="sidebar-header">
+                <h1>Forge</h1>
+                <div id="search-box">
+                    <input type="text" id="search-input" placeholder="Search files..." autocomplete="off">
+                </div>
+            </div>
+            <div id="search-results" class="hidden"></div>
+            <div id="file-tree"></div>
+        </div>
+        <div id="resizer"></div>
+        <div id="content">
+            <div id="welcome">
+                <div class="welcome-inner">
+                    <h2>Forge</h2>
+                    <p>Browse your repos. Click a file to view it.</p>
+                </div>
+            </div>
+            <div id="file-header" class="hidden">
+                <span id="file-path"></span>
+                <span id="file-size"></span>
+            </div>
+            <div id="file-content" class="hidden"></div>
+        </div>
+    </div>
+    <script src="/app.js"></script>
+</body>
+</html>
