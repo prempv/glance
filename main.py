@@ -1,11 +1,16 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-WORKSPACE = Path("/home/ubuntu/scx/work")
-ROOTS = ["scx-platform", "swiftcx-engine"]
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
+WORKSPACE = Path(os.getenv("EXPLORER_WORKSPACE", Path(__file__).resolve().parent.parent))
+ROOTS = [r.strip() for r in os.getenv("EXPLORER_ROOTS", "").split(",") if r.strip()] or [
+    d.name for d in sorted(WORKSPACE.iterdir()) if d.is_dir() and not d.name.startswith(".") and d.name != "worktrees"
+]
 VIEWABLE_EXTENSIONS = {".py", ".md", ".txt", ".json", ".yaml", ".yml", ".toml", ".cfg", ".ini", ".sh", ".bash", ".js", ".ts", ".tsx", ".jsx", ".css", ".html", ".sql", ".env", ".gitignore", ".dockerignore", "Dockerfile"}
 SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv", "venv", ".mypy_cache", ".pytest_cache", ".ruff_cache", "dist", "build", ".next", ".nuxt"}
 
@@ -75,10 +80,27 @@ def get_file(path: str = Query(...)):
 
 
 @app.get("/api/search")
-def search_files(q: str = Query(..., min_length=1)):
+def search_files(
+    q: str = Query(..., min_length=1),
+    roots: str = Query("", description="Comma-separated root names to search"),
+    ext: str = Query("", description="Extension filter, e.g. .py or .md"),
+):
     q_lower = q.lower()
+    ext_filter = ext.lower().strip() if ext else ""
+    search_roots = [r.strip() for r in roots.split(",") if r.strip()] if roots else ROOTS
+
+    all_roots = list(ROOTS)
+    worktrees = WORKSPACE / "worktrees"
+    if worktrees.is_dir():
+        for wt in sorted(worktrees.iterdir()):
+            if wt.is_dir():
+                all_roots.append(f"worktrees/{wt.name}")
+    search_roots = [r for r in search_roots if r in all_roots]
+    if not search_roots:
+        search_roots = ROOTS
+
     results = []
-    for root_name in ROOTS:
+    for root_name in search_roots:
         root = WORKSPACE / root_name
         if not root.is_dir():
             continue
@@ -87,10 +109,12 @@ def search_files(q: str = Query(..., min_length=1)):
             for fname in filenames:
                 if q_lower in fname.lower():
                     fp = Path(dirpath) / fname
-                    ext = fp.suffix.lower()
-                    if ext in VIEWABLE_EXTENSIONS or fname in VIEWABLE_EXTENSIONS:
+                    file_ext = fp.suffix.lower()
+                    if ext_filter and file_ext != ext_filter:
+                        continue
+                    if file_ext in VIEWABLE_EXTENSIONS or fname in VIEWABLE_EXTENSIONS:
                         rel = str(fp.relative_to(WORKSPACE))
-                        results.append({"name": fname, "path": rel, "ext": ext})
+                        results.append({"name": fname, "path": rel, "ext": file_ext})
                         if len(results) >= 50:
                             return results
     return results

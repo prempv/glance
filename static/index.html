@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Forge</title>
+    <title>Glance</title>
     <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
@@ -20,27 +20,76 @@
     <div id="app">
         <div id="sidebar">
             <div id="sidebar-header">
-                <h1>Forge</h1>
+                <div class="header-row">
+                    <h1>Glance</h1>
+                    <button id="theme-toggle" title="Toggle theme">☀</button>
+                </div>
                 <div id="search-box">
                     <input type="text" id="search-input" placeholder="Search files..." autocomplete="off">
+                    <div id="quick-filters">
+                        <button class="quick-filter" data-ext=".md">*.md</button>
+                        <button class="quick-filter" data-ext=".py">*.py</button>
+                        <button class="quick-filter" data-ext=".sql">*.sql</button>
+                        <button class="quick-filter" data-ext=".yaml">*.yaml</button>
+                    </div>
                 </div>
             </div>
+            <div id="scope-filters"></div>
             <div id="search-results" class="hidden"></div>
             <div id="file-tree"></div>
         </div>
-        <div id="resizer"></div>
+        <div id="resizer"><div class="resizer-handle"></div></div>
+        <div id="sidebar-overlay" class="hidden"></div>
         <div id="content">
             <div id="welcome">
                 <div class="welcome-inner">
-                    <h2>Forge</h2>
+                    <h2>Glance</h2>
                     <p>Browse your repos. Click a file to view it.</p>
+                    <button id="sidebar-toggle-welcome" class="mobile-only">Open sidebar</button>
                 </div>
             </div>
             <div id="file-header" class="hidden">
+                <button id="sidebar-toggle" title="Toggle sidebar">☰</button>
                 <span id="file-path"></span>
                 <span id="file-size"></span>
             </div>
+            <div id="content-toolbar" class="hidden">
+                <div id="toolbar-left">
+                    <div id="md-toolbar-slot"></div>
+                </div>
+                <div id="toolbar-right">
+                    <span id="zoom-controls">
+                        <button id="zoom-out" title="Zoom out">&minus;</button>
+                        <span id="zoom-level">100%</span>
+                        <button id="zoom-in" title="Zoom in">+</button>
+                        <button id="zoom-reset" title="Reset zoom">1:1</button>
+                    </span>
+                    <button id="find-toggle" title="Find in file (Ctrl+F)">&#x1F50D;</button>
+                </div>
+            </div>
+            <div id="find-bar" class="hidden">
+                <input type="text" id="find-input" placeholder="Find in file..." autocomplete="off">
+                <span id="find-count"></span>
+                <button id="find-prev" title="Previous (Shift+Enter)">&#x25B2;</button>
+                <button id="find-next" title="Next (Enter)">&#x25BC;</button>
+                <label id="find-case-label" title="Match case"><input type="checkbox" id="find-case"> Aa</label>
+                <button id="find-close" title="Close (Esc)">&times;</button>
+            </div>
             <div id="file-content" class="hidden"></div>
+        </div>
+    </div>
+    <div id="mermaid-modal" class="hidden">
+        <div id="mermaid-modal-backdrop"></div>
+        <div id="mermaid-modal-header">
+            <span id="mermaid-modal-zoom-label">100%</span>
+            <button id="mermaid-modal-zoom-in" title="Zoom in">+</button>
+            <button id="mermaid-modal-zoom-out" title="Zoom out">&minus;</button>
+            <button id="mermaid-modal-fit" title="Fit to screen">Fit</button>
+            <button id="mermaid-modal-reset" title="Reset zoom">1:1</button>
+            <button id="mermaid-modal-close" title="Close (Esc)">&times;</button>
+        </div>
+        <div id="mermaid-modal-viewport">
+            <div id="mermaid-modal-content"></div>
         </div>
     </div>
     <script src="/app.js"></script>
