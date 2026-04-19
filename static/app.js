@@ -550,7 +550,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             const res = await fetch(`/api/file?path=${encodeURIComponent(path)}`);
-            if (!res.ok) throw new Error(await res.text());
+            if (!res.ok) {
+                const raw = await res.text();
+                let detail = raw;
+                try { detail = JSON.parse(raw).detail || raw; } catch(_) {}
+                const err = new Error(detail || res.statusText);
+                err.status = res.status;
+                throw err;
+            }
             const data = await res.json();
 
             welcome.classList.add('hidden');
@@ -567,8 +574,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderCode(data.content, data.ext);
             }
         } catch (e) {
-            fileContent.innerHTML = `<div style="color:var(--red);padding:20px;">${esc(e.message)}</div>`;
+            showNotFound(path, e);
         }
+    }
+
+    function showNotFound(path, err) {
+        currentFile = '';
+        saveState('currentFile', '');
+        if (activeItem) { activeItem.classList.remove('active'); activeItem = null; }
+        welcome.classList.add('hidden');
+        fileHeader.classList.add('hidden');
+        document.getElementById('content-toolbar').classList.add('hidden');
+        fileContent.classList.remove('hidden');
+        const status = err && err.status;
+        const title = status === 404 ? '404 Not Found' : (status ? `${status} Error` : 'Error');
+        const detail = (err && err.message) || 'Unable to load file.';
+        fileContent.innerHTML = `
+            <div class="not-found-panel">
+                <h2>${esc(title)}</h2>
+                <p class="not-found-path">${esc(path)}</p>
+                <p class="not-found-detail">${esc(detail)}</p>
+                <button class="not-found-home" type="button">Go to home</button>
+            </div>`;
+        fileContent.querySelector('.not-found-home').addEventListener('click', goHome);
+    }
+
+    function goHome() {
+        currentFile = '';
+        saveState('currentFile', '');
+        history.replaceState(null, '', location.pathname);
+        fileContent.innerHTML = '';
+        fileContent.classList.add('hidden');
+        fileHeader.classList.add('hidden');
+        document.getElementById('content-toolbar').classList.add('hidden');
+        closeFindBar();
+        welcome.classList.remove('hidden');
+        if (activeItem) { activeItem.classList.remove('active'); activeItem = null; }
     }
 
     // --- Markdown rendering ---
@@ -1187,14 +1228,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (url.file && url.file !== currentFile) {
             openFile(url.file, null);
         } else if (!url.file && currentFile) {
-            currentFile = '';
-            saveState('currentFile', '');
-            welcome.classList.remove('hidden');
-            fileHeader.classList.add('hidden');
-            fileContent.classList.add('hidden');
-            document.getElementById('content-toolbar').classList.add('hidden');
-            closeFindBar();
-            if (activeItem) { activeItem.classList.remove('active'); activeItem = null; }
+            goHome();
         }
         suppressPush = false;
     });

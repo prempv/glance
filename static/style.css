@@ -459,6 +459,52 @@ html, body {
     font-weight: 300;
 }
 
+.not-found-panel {
+    max-width: 560px;
+    margin: 80px auto;
+    padding: 32px 28px;
+    text-align: center;
+    color: var(--text-dim);
+}
+
+.not-found-panel h2 {
+    font-size: 22px;
+    color: var(--red);
+    font-weight: 400;
+    margin: 0 0 12px;
+}
+
+.not-found-panel .not-found-path {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    color: var(--text);
+    background: var(--sidebar-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 12px;
+    word-break: break-all;
+    margin: 0 0 12px;
+}
+
+.not-found-panel .not-found-detail {
+    font-size: 13px;
+    margin: 0 0 20px;
+}
+
+.not-found-panel .not-found-home {
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--sidebar-bg);
+    color: var(--accent);
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.not-found-panel .not-found-home:hover { background: var(--hover); }
+
 #file-header {
     padding: 6px 12px;
     background: var(--sidebar-bg);
