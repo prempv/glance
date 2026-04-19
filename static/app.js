@@ -688,7 +688,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!mdView) return;
 
         const headings = mdView.querySelectorAll('h1, h2, h3, h4, h5, h6');
+        const usedIds = new Set();
         headings.forEach((heading) => {
+            if (!heading.id) {
+                const base = slugify(heading.textContent);
+                if (base) {
+                    let id = base;
+                    let n = 2;
+                    while (usedIds.has(id)) id = `${base}-${n++}`;
+                    heading.id = id;
+                    usedIds.add(id);
+                }
+            } else {
+                usedIds.add(heading.id);
+            }
             heading.classList.add('md-section-toggle');
             const level = parseInt(heading.tagName[1]);
             const contentDiv = document.createElement('div');
@@ -1186,11 +1199,39 @@ document.addEventListener('DOMContentLoaded', () => {
         suppressPush = false;
     });
 
+    // --- In-file anchor links (markdown) ---
+    fileContent.addEventListener('click', (e) => {
+        const link = e.target.closest('a[href^="#"]');
+        if (!link || !fileContent.contains(link)) return;
+        const href = link.getAttribute('href');
+        if (!href || href.length < 2) return;
+        e.preventDefault();
+        const targetId = decodeURIComponent(href.slice(1));
+        const container = fileContent.querySelector('.md-view') || fileContent;
+        const target = container.querySelector(`[id="${CSS.escape(targetId)}"]`);
+        if (!target) return;
+        expandCollapsedAncestors(target);
+        if (target.classList.contains('md-section-toggle') && target.classList.contains('collapsed')) {
+            target.classList.remove('collapsed');
+            const next = target.nextElementSibling;
+            if (next && next.classList.contains('md-section-content')) next.classList.remove('collapsed');
+        }
+        target.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+
     // --- Util ---
     function esc(s) {
         const div = document.createElement('div');
         div.textContent = s;
         return div.innerHTML;
+    }
+
+    function slugify(text) {
+        return text.toLowerCase().trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
     }
 
     function formatSize(bytes) {
