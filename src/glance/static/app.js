@@ -125,6 +125,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (searchInput.value.trim()) triggerSearch();
     });
 
+    const refreshBtn = document.getElementById('refresh-btn');
+    refreshBtn.addEventListener('click', async () => {
+        refreshBtn.classList.add('spinning');
+        try {
+            await loadRoots();
+            if (searchInput.value.trim()) triggerSearch();
+        } finally {
+            setTimeout(() => refreshBtn.classList.remove('spinning'), 400);
+        }
+    });
+
     let activeItem = null;
     let searchTimeout = null;
     let allRoots = [];
@@ -290,11 +301,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Scope filters (checkboxes per root) ---
     async function loadRoots() {
-        const res = await fetch('/api/roots');
+        const res = await fetch('/api/roots', { cache: 'no-store' });
         allRoots = await res.json();
         const savedScopes = loadState('scopes', null);
 
         scopeFilters.innerHTML = '';
+        fileTree.innerHTML = '';
+        searchResults.innerHTML = '';
+        searchResults.classList.add('hidden');
+        fileTree.classList.remove('hidden');
         const scopeCollapsed = loadState('scopeCollapsed', false);
 
         const header = document.createElement('div');
@@ -447,7 +462,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (showHidden) params.set('show_hidden', '1');
 
         try {
-            const res = await fetch(`/api/search?${params}`);
+            const res = await fetch(`/api/search?${params}`, { cache: 'no-store' });
             const results = await res.json();
             searchResults.innerHTML = '';
             fileTree.classList.add('hidden');
@@ -494,7 +509,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     try {
                         const treeParams = new URLSearchParams({ path: item.path });
                         if (showHidden) treeParams.set('show_hidden', '1');
-                        const res = await fetch(`/api/tree?${treeParams}`);
+                        const res = await fetch(`/api/tree?${treeParams}`, { cache: 'no-store' });
                         const entries = await res.json();
                         for (const entry of entries) {
                             children.appendChild(createTreeNode(entry, depth + 1));
@@ -574,7 +589,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateURL(true);
 
         try {
-            const res = await fetch(`/api/file?path=${encodeURIComponent(path)}`);
+            const res = await fetch(`/api/file?path=${encodeURIComponent(path)}`, { cache: 'no-store' });
             if (!res.ok) {
                 const raw = await res.text();
                 let detail = raw;
