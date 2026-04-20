@@ -102,7 +102,14 @@ html, body {
     margin-bottom: 6px;
 }
 
-#theme-toggle {
+.header-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+#theme-toggle,
+#hidden-toggle {
     background: none;
     border: 1px solid var(--border);
     border-radius: 4px;
@@ -118,9 +125,19 @@ html, body {
     -webkit-tap-highlight-color: transparent;
 }
 
-#theme-toggle:hover { border-color: var(--accent); background: var(--hover); }
-@media (hover: none) { #theme-toggle:hover { border-color: var(--border); background: none; } }
-#theme-toggle:active { background: var(--hover); border-color: var(--accent); }
+#hidden-toggle { font-size: 13px; font-family: ui-monospace, monospace; }
+#hidden-toggle.active { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+#theme-toggle:hover,
+#hidden-toggle:hover { border-color: var(--accent); background: var(--hover); }
+#hidden-toggle.active:hover { background: var(--accent); }
+@media (hover: none) {
+    #theme-toggle:hover,
+    #hidden-toggle:hover { border-color: var(--border); background: none; }
+    #hidden-toggle.active:hover { background: var(--accent); border-color: var(--accent); }
+}
+#theme-toggle:active,
+#hidden-toggle:active { background: var(--hover); border-color: var(--accent); }
 
 /* ── Search ── */
 #search-box input {

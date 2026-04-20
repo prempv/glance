@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Theme ---
     let currentTheme = loadState('theme', 'dark');
+    let showHidden = loadState('showHidden', false);
     applyTheme(currentTheme);
 
     function applyTheme(theme) {
@@ -101,6 +102,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('theme-toggle').addEventListener('click', () => {
         applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+    });
+
+    const hiddenToggleBtn = document.getElementById('hidden-toggle');
+    function applyHiddenToggle() {
+        hiddenToggleBtn.classList.toggle('active', showHidden);
+        hiddenToggleBtn.title = showHidden ? 'Hide hidden files' : 'Show hidden files';
+    }
+    function refreshTree() {
+        if (!allRoots || !allRoots.length) return;
+        fileTree.innerHTML = '';
+        for (const root of allRoots) {
+            fileTree.appendChild(createTreeNode(root, 0));
+        }
+    }
+    applyHiddenToggle();
+    hiddenToggleBtn.addEventListener('click', () => {
+        showHidden = !showHidden;
+        saveState('showHidden', showHidden);
+        applyHiddenToggle();
+        refreshTree();
+        if (searchInput.value.trim()) triggerSearch();
     });
 
     let activeItem = null;
@@ -422,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams({ q });
         if (roots) params.set('roots', roots);
         if (activeExtFilter) params.set('ext', activeExtFilter);
+        if (showHidden) params.set('show_hidden', '1');
 
         try {
             const res = await fetch(`/api/search?${params}`);
@@ -469,7 +492,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!loaded) {
                     loaded = true;
                     try {
-                        const res = await fetch(`/api/tree?path=${encodeURIComponent(item.path)}`);
+                        const treeParams = new URLSearchParams({ path: item.path });
+                        if (showHidden) treeParams.set('show_hidden', '1');
+                        const res = await fetch(`/api/tree?${treeParams}`);
                         const entries = await res.json();
                         for (const entry of entries) {
                             children.appendChild(createTreeNode(entry, depth + 1));

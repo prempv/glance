@@ -26,7 +26,13 @@ def _discover_roots(workspace: Path) -> list[str]:
 	]
 
 
-def _build_tree(root_path: Path, rel_prefix: str = "") -> list[dict]:
+def _file_visible(name: str, ext: str, show_hidden: bool) -> bool:
+	if name.startswith("."):
+		return show_hidden or name in VIEWABLE_EXTENSIONS
+	return ext in VIEWABLE_EXTENSIONS or name in VIEWABLE_EXTENSIONS
+
+
+def _build_tree(root_path: Path, rel_prefix: str = "", show_hidden: bool = False) -> list[dict]:
 	entries: list[dict] = []
 	try:
 		items = sorted(root_path.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
@@ -41,7 +47,7 @@ def _build_tree(root_path: Path, rel_prefix: str = "") -> list[dict]:
 			entries.append({"name": item.name, "path": rel, "type": "dir", "children": None})
 		else:
 			ext = item.suffix.lower()
-			if ext in VIEWABLE_EXTENSIONS or item.name in VIEWABLE_EXTENSIONS:
+			if _file_visible(item.name, ext, show_hidden):
 				entries.append({"name": item.name, "path": rel, "type": "file", "ext": ext})
 	return entries
 
@@ -84,13 +90,13 @@ def create_app(workspace: Path, roots: list[str] | None = None) -> FastAPI:
 		return out
 
 	@app.get("/api/tree")
-	def get_tree(path: str = Query(...)):
+	def get_tree(path: str = Query(...), show_hidden: bool = Query(False)):
 		full = (workspace / path).resolve()
 		if not str(full).startswith(str(workspace)):
 			raise HTTPException(403, "Access denied")
 		if not full.is_dir():
 			raise HTTPException(404, "Not a directory")
-		return _build_tree(full, path)
+		return _build_tree(full, path, show_hidden)
 
 	@app.get("/api/file")
 	def get_file(path: str = Query(...)):
@@ -119,6 +125,7 @@ def create_app(workspace: Path, roots: list[str] | None = None) -> FastAPI:
 		q: str = Query(..., min_length=1),
 		roots: str = Query("", description="Comma-separated root names to search"),
 		ext: str = Query("", description="Extension filter, e.g. .py or .md"),
+		show_hidden: bool = Query(False),
 	):
 		q_lower = q.lower()
 		ext_filter = ext.lower().strip() if ext else ""
@@ -140,7 +147,7 @@ def create_app(workspace: Path, roots: list[str] | None = None) -> FastAPI:
 					file_ext = fp.suffix.lower()
 					if ext_filter and file_ext != ext_filter:
 						continue
-					if file_ext in VIEWABLE_EXTENSIONS or fname in VIEWABLE_EXTENSIONS:
+					if _file_visible(fname, file_ext, show_hidden):
 						rel = str(fp.relative_to(workspace))
 						results.append({"name": fname, "path": rel, "ext": file_ext})
 						if len(results) >= 50:
